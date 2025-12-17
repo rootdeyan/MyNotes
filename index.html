@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cartoon Notes Tabs</title>
+  <!-- Import Roboto from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #fdf6e3;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background: #ffcc80;
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 4px solid #ffb74d;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .toolbar {
+      margin-top: 0.5rem;
+    }
+
+    button, input[type="color"], input[type="text"] {
+      border: none;
+      background: #fff176;
+      padding: 0.5rem 1rem;
+      margin: 0.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.1s ease;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background: #ffd54f;
+    }
+
+    #searchBar {
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 2px solid #ffb74d;
+      width: 200px;
+      font-weight: normal;
+      background: #fff;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 0.5rem;
+      background: #ffe0b2;
+      border-bottom: 3px solid #ffb74d;
+    }
+
+    .tab {
+      background: #fff;
+      border: 2px solid #ffb74d;
+      border-radius: 8px;
+      padding: 0.3rem 0.8rem;
+      margin: 0.2rem;
+      cursor: pointer;
+      position: relative;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .tab.active {
+      background: #ffd54f;
+    }
+
+    .tab .pin {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      cursor: pointer;
+    }
+
+    .tab .close {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      cursor: pointer;
+    }
+
+    .editor {
+      margin: 1rem auto;
+      width: 80%;
+      min-height: 300px;
+      background: #fff;
+      border: 3px dashed #ffb74d;
+      border-radius: 12px;
+      padding: 1rem;
+      outline: none;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #ffcc80;
+      border-top: 4px solid #ffb74d;
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🖊️ Cartoon Notes</h1>
+    <div class="toolbar">
+      <button onclick="formatText('bold')">Bold</button>
+      <button onclick="formatText('italic')">Italic</button>
+      <button onclick="formatText('underline')">Underline</button>
+      <input type="color" id="colorPicker" onchange="changeColor(this.value)">
+      <button onclick="saveCurrentNote()">💾 Save</button>
+      <button onclick="createTab()">➕ New Tab</button>
+      <input type="text" id="searchBar" placeholder="🔍 Search notes..." oninput="searchNotes()">
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs" id="tabs"></div>
+    <div id="editor" contenteditable="true" class="editor"></div>
+  </main>
+
+  <footer>
+    <p>Notes are saved locally ✨</p>
+  </footer>
+
+  <script>
+    let notes = JSON.parse(localStorage.getItem("cartoonNotes")) || [];
+    let currentTab = null;
+    let searchQuery = "";
+
+    // Render tabs with search filter
+    function renderTabs() {
+      const tabsDiv = document.getElementById("tabs");
+      tabsDiv.innerHTML = "";
+
+      const sorted = [...notes].sort((a, b) => b.pinned - a.pinned);
+
+      sorted
+        .filter(note => {
+          if (!searchQuery) return true;
+          const text = (note.title + " " + note.content).toLowerCase();
+          return text.includes(searchQuery.toLowerCase());
+        })
+        .forEach(note => {
+          const tab = document.createElement("div");
+          tab.className = "tab" + (note.id === currentTab ? " active" : "");
+          tab.innerText = note.title || "Untitled";
+
+          const pinBtn = document.createElement("span");
+          pinBtn.innerText = "📌";
+          pinBtn.className = "pin";
+          pinBtn.onclick = (e) => {
+            e.stopPropagation();
+            note.pinned = !note.pinned;
+            saveAll();
+            renderTabs();
+          };
+          tab.appendChild(pinBtn);
+
+          const closeBtn = document.createElement("span");
+          closeBtn.innerText = "❌";
+          closeBtn.className = "close";
+          closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            notes = notes.filter(n => n.id !== note.id);
+            if (currentTab === note.id) currentTab = null;
+            saveAll();
+            renderTabs();
+            document.getElementById("editor").innerHTML = "";
+          };
+          tab.appendChild(closeBtn);
+
+          tab.onclick = () => {
+            currentTab = note.id;
+            document.getElementById("editor").innerHTML = note.content;
+            renderTabs();
+          };
+
+          tabsDiv.appendChild(tab);
+        });
+    }
+
+    // Search notes
+    function searchNotes() {
+      searchQuery = document.getElementById("searchBar").value;
+      renderTabs();
+    }
+
+    // Create new tab
+    function createTab() {
+      const id = Date.now();
+      const newNote = { id, title: "Note " + (notes.length + 1), content: "", pinned: false };
+      notes.push(newNote);
+      currentTab = id;
+      saveAll();
+      renderTabs();
+      document.getElementById("editor").innerHTML = "";
+    }
+
+    // Save current note
+    function saveCurrentNote() {
+      if (!currentTab) return;
+      const note = notes.find(n => n.id === currentTab);
+      note.content = document.getElementById("editor").innerHTML;
+      note.title = note.content.replace(/<[^>]+>/g, "").slice(0, 15) || "Untitled";
+      saveAll();
+      renderTabs();
+      alert("Note saved!");
+    }
+
+    // Save all notes
+    function saveAll() {
+      localStorage.setItem("cartoonNotes", JSON.stringify(notes));
+    }
+
+    // Formatting
+    function formatText(command) {
+      document.execCommand(command, false, null);
+    }
+
+    function changeColor(color) {
+      document.execCommand("foreColor", false, color);
+    }
+
+    // Normalize pasted text to Roboto
+    document.getElementById("editor").addEventListener("paste", function(e) {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+      document.execCommand("insertText", false, text);
+    });
+
+    // Load on startup
+    window.onload = () => {
+      renderTabs();
+      if (currentTab) {
+        const note = notes.find(n => n.id === currentTab);
+        if (note) document.getElementById("editor").innerHTML = note.content;
+      }
+    };
+  </script>
+</body>
+</html>
