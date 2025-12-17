@@ -2,255 +2,312 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cartoon Notes Tabs</title>
-  <!-- Import Roboto from Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <title>Cartoon Notes — Dark</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    body {
+    :root {
+      --bg: #0f1220;
+      --panel: #171a2b;
+      --accent: #7c6cff;
+      --accent-2: #ff7fb6;
+      --text: #e9ecf5;
+      --muted: #aab3cc;
+      --border: #252846;
+      --yellow: #ffd166;
+      --green: #4ade80;
+      --red: #ff6b6b;
+      --blue: #60a5fa;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; background: var(--bg); color: var(--text);
       font-family: 'Roboto', sans-serif;
-      background: #fdf6e3;
-      margin: 0;
-      padding: 0;
-      color: #333;
     }
 
     header {
-      background: #ffcc80;
-      padding: 1rem;
-      text-align: center;
-      border-bottom: 4px solid #ffb74d;
+      position: sticky; top: 0; z-index: 10;
+      background: linear-gradient(180deg, #121526 0%, var(--panel) 100%);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
     }
-
-    h1 {
-      margin: 0;
-      font-size: 2rem;
+    .brand {
+      display: flex; align-items: center; gap: .6rem; padding: 1rem;
     }
+    .brand i {
+      color: var(--accent); font-size: 1.3rem; animation: float 3s ease-in-out infinite;
+    }
+    .brand h1 { font-size: 1.25rem; margin: 0; letter-spacing: .5px; }
 
     .toolbar {
-      margin-top: 0.5rem;
+      display: flex; gap: .5rem; padding: .75rem 1rem; flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      background: #14172a;
     }
-
-    button, input[type="color"], input[type="text"] {
-      border: none;
-      background: #fff176;
-      padding: 0.5rem 1rem;
-      margin: 0.2rem;
-      border-radius: 8px;
+    .btn, input[type="color"], input[type="text"] {
+      border: 1px solid var(--border);
+      background: #1b1f33;
+      color: var(--text);
+      padding: .55rem .7rem;
+      border-radius: 10px;
       cursor: pointer;
-      font-weight: bold;
-      transition: transform 0.1s ease;
-      font-family: 'Roboto', sans-serif;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      box-shadow: 0 6px 16px rgba(0,0,0,.25);
     }
-
-    button:hover {
-      transform: scale(1.1);
-      background: #ffd54f;
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+    .btn:active { transform: translateY(0); }
+    .btn i { font-size: 1rem; }
+    input[type="text"] {
+      min-width: 180px; color: var(--text);
     }
-
-    #searchBar {
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 2px solid #ffb74d;
-      width: 200px;
-      font-weight: normal;
-      background: #fff;
-    }
+    #searchBar { flex: 1; min-width: 220px; }
+    #titleInput { min-width: 240px; }
 
     .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      padding: 0.5rem;
-      background: #ffe0b2;
-      border-bottom: 3px solid #ffb74d;
+      display: flex; gap: .5rem; padding: .7rem 1rem; flex-wrap: wrap;
+      background: #13172a; border-top: 1px solid var(--border);
     }
-
     .tab {
-      background: #fff;
-      border: 2px solid #ffb74d;
-      border-radius: 8px;
-      padding: 0.3rem 0.8rem;
-      margin: 0.2rem;
-      cursor: pointer;
-      position: relative;
-      font-family: 'Roboto', sans-serif;
+      position: relative; display: inline-flex; align-items: center; gap: .5rem;
+      background: #1c2036; border: 1px solid var(--border);
+      border-radius: 12px; padding: .4rem .7rem; cursor: pointer;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,.25);
+      animation: pop .18s ease-out;
+    }
+    .tab:hover { transform: translateY(-1px); background: #202543; }
+    .tab.active { background: #262b4d; border-color: var(--accent); }
+    .tab .title { max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab .pin { color: var(--yellow); }
+    .tab .close { color: var(--red); }
+    .tab .pin, .tab .close {
+      padding: .25rem; border-radius: 8px; transition: background .2s ease;
+    }
+    .tab .pin:hover, .tab .close:hover { background: rgba(255,255,255,.06); }
+
+    main { padding: 1rem; }
+    .panel {
+      max-width: 1100px; margin: 0 auto;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 16px; box-shadow: var(--shadow); overflow: hidden;
+      animation: fadeIn .25s ease-out;
     }
 
-    .tab.active {
-      background: #ffd54f;
+    .editor-wrap {
+      display: grid; grid-template-columns: 1fr; gap: .75rem; padding: 1rem;
     }
-
-    .tab .pin {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      cursor: pointer;
-    }
-
-    .tab .close {
-      position: absolute;
-      bottom: -5px;
-      right: -5px;
-      cursor: pointer;
-    }
-
     .editor {
-      margin: 1rem auto;
-      width: 80%;
-      min-height: 300px;
-      background: #fff;
-      border: 3px dashed #ffb74d;
-      border-radius: 12px;
-      padding: 1rem;
-      outline: none;
-      font-family: 'Roboto', sans-serif;
+      min-height: 320px; background: #0f1327; border: 2px dashed #2a2f57;
+      border-radius: 12px; padding: 1rem; outline: none; line-height: 1.6;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
     }
 
     footer {
-      text-align: center;
-      padding: 1rem;
-      background: #ffcc80;
-      border-top: 4px solid #ffb74d;
-      font-family: 'Roboto', sans-serif;
+      text-align: center; padding: 1rem; color: var(--muted);
+    }
+
+    /* Animations */
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    @keyframes pop { from { transform: scale(.98); opacity: .6; } to { transform: scale(1); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: .6; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
+
+    /* Utilities */
+    .spacer { flex: 1; }
+    .success { color: var(--green); }
+    .warn { color: var(--yellow); }
+    .info { color: var(--blue); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .editor { min-height: 280px; }
+      .tab .title { max-width: 120px; }
+    }
+    @media (max-width: 600px) {
+      .toolbar { overflow-x: auto; gap: .4rem; }
+      .editor { min-height: 240px; }
+      .tab .title { max-width: 100px; }
+      .brand h1 { font-size: 1.05rem; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🖊️ Cartoon Notes</h1>
-    <div class="toolbar">
-      <button onclick="formatText('bold')">Bold</button>
-      <button onclick="formatText('italic')">Italic</button>
-      <button onclick="formatText('underline')">Underline</button>
-      <input type="color" id="colorPicker" onchange="changeColor(this.value)">
-      <button onclick="saveCurrentNote()">💾 Save</button>
-      <button onclick="createTab()">➕ New Tab</button>
-      <input type="text" id="searchBar" placeholder="🔍 Search notes..." oninput="searchNotes()">
+    <div class="brand">
+      <i class="fa-solid fa-note-sticky"></i>
+      <h1>Cartoon Notes</h1>
     </div>
+    <div class="toolbar">
+      <button class="btn" title="Bold" onclick="formatText('bold')"><i class="fa-solid fa-bold"></i></button>
+      <button class="btn" title="Italic" onclick="formatText('italic')"><i class="fa-solid fa-italic"></i></button>
+      <button class="btn" title="Underline" onclick="formatText('underline')"><i class="fa-solid fa-underline"></i></button>
+      <input type="color" id="colorPicker" title="Text color" onchange="changeColor(this.value)">
+      <button class="btn" title="Save note" onclick="saveCurrentNote()"><i class="fa-solid fa-floppy-disk"></i></button>
+      <button class="btn" title="New tab" onclick="createTab()"><i class="fa-solid fa-plus"></i></button>
+      <button class="btn" title="Pin/Unpin current" onclick="togglePinCurrent()"><i class="fa-solid fa-thumbtack"></i></button>
+      <span class="spacer"></span>
+      <input type="text" id="titleInput" placeholder="Tab title..." oninput="updateTitleLive()" title="Edit current tab title">
+      <input type="text" id="searchBar" placeholder="Search notes..." oninput="searchNotes()" title="Search by title or content">
+    </div>
+    <div class="tabs" id="tabs"></div>
   </header>
 
   <main>
-    <div class="tabs" id="tabs"></div>
-    <div id="editor" contenteditable="true" class="editor"></div>
+    <div class="panel">
+      <div class="editor-wrap">
+        <div id="editor" class="editor" contenteditable="true" spellcheck="false"></div>
+      </div>
+    </div>
   </main>
 
   <footer>
-    <p>Notes are saved locally ✨</p>
+    Notes are saved locally (browser) • Paste is normalized to Roboto • Dark, responsive, animated
   </footer>
 
   <script>
-    let notes = JSON.parse(localStorage.getItem("cartoonNotes")) || [];
+    // State
+    let notes = JSON.parse(localStorage.getItem('cartoonNotes')) || [];
     let currentTab = null;
-    let searchQuery = "";
+    let searchQuery = '';
 
-    // Render tabs with search filter
+    // Helpers
+    const $ = sel => document.querySelector(sel);
+    const editor = $('#editor');
+    const tabsDiv = $('#tabs');
+    const titleInput = $('#titleInput');
+
+    function saveAll() {
+      localStorage.setItem('cartoonNotes', JSON.stringify(notes));
+    }
+
+    // Tabs rendering with search and pin ordering
     function renderTabs() {
-      const tabsDiv = document.getElementById("tabs");
-      tabsDiv.innerHTML = "";
-
-      const sorted = [...notes].sort((a, b) => b.pinned - a.pinned);
-
-      sorted
-        .filter(note => {
+      tabsDiv.innerHTML = '';
+      const filtered = notes
+        .filter(n => {
           if (!searchQuery) return true;
-          const text = (note.title + " " + note.content).toLowerCase();
+          const text = ((n.title || '') + ' ' + (n.content || '')).toLowerCase();
           return text.includes(searchQuery.toLowerCase());
         })
-        .forEach(note => {
-          const tab = document.createElement("div");
-          tab.className = "tab" + (note.id === currentTab ? " active" : "");
-          tab.innerText = note.title || "Untitled";
+        .sort((a, b) => (b.pinned === a.pinned) ? (b.updated - a.updated) : (b.pinned - a.pinned));
 
-          const pinBtn = document.createElement("span");
-          pinBtn.innerText = "📌";
-          pinBtn.className = "pin";
-          pinBtn.onclick = (e) => {
-            e.stopPropagation();
-            note.pinned = !note.pinned;
-            saveAll();
-            renderTabs();
-          };
-          tab.appendChild(pinBtn);
+      filtered.forEach(n => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (n.id === currentTab ? ' active' : '');
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-file-lines info';
+        const title = document.createElement('span');
+        title.className = 'title';
+        title.textContent = n.title || 'Untitled';
 
-          const closeBtn = document.createElement("span");
-          closeBtn.innerText = "❌";
-          closeBtn.className = "close";
-          closeBtn.onclick = (e) => {
-            e.stopPropagation();
-            notes = notes.filter(n => n.id !== note.id);
-            if (currentTab === note.id) currentTab = null;
-            saveAll();
-            renderTabs();
-            document.getElementById("editor").innerHTML = "";
-          };
-          tab.appendChild(closeBtn);
+        const pin = document.createElement('i');
+        pin.className = 'fa-solid fa-thumbtack pin';
+        pin.title = n.pinned ? 'Unpin' : 'Pin';
+        pin.onclick = e => { e.stopPropagation(); n.pinned = !n.pinned; saveAll(); renderTabs(); };
 
-          tab.onclick = () => {
-            currentTab = note.id;
-            document.getElementById("editor").innerHTML = note.content;
-            renderTabs();
-          };
+        const close = document.createElement('i');
+        close.className = 'fa-solid fa-xmark close';
+        close.title = 'Delete tab';
+        close.onclick = e => {
+          e.stopPropagation();
+          notes = notes.filter(x => x.id !== n.id);
+          if (currentTab === n.id) { currentTab = null; editor.innerHTML = ''; titleInput.value = ''; }
+          saveAll(); renderTabs();
+        };
 
-          tabsDiv.appendChild(tab);
-        });
+        tab.onclick = () => { openTab(n.id); };
+
+        tab.appendChild(icon);
+        tab.appendChild(title);
+        tab.appendChild(pin);
+        tab.appendChild(close);
+        tabsDiv.appendChild(tab);
+      });
     }
 
-    // Search notes
-    function searchNotes() {
-      searchQuery = document.getElementById("searchBar").value;
+    function openTab(id) {
+      currentTab = id;
+      const note = notes.find(n => n.id === id);
+      editor.innerHTML = note?.content || '';
+      titleInput.value = note?.title || '';
       renderTabs();
     }
 
-    // Create new tab
     function createTab() {
       const id = Date.now();
-      const newNote = { id, title: "Note " + (notes.length + 1), content: "", pinned: false };
+      const newNote = { id, title: 'New note', content: '', pinned: false, updated: Date.now() };
       notes.push(newNote);
-      currentTab = id;
       saveAll();
-      renderTabs();
-      document.getElementById("editor").innerHTML = "";
+      openTab(id);
     }
 
-    // Save current note
     function saveCurrentNote() {
+      if (!currentTab) return pulseFail();
+      const note = notes.find(n => n.id === currentTab);
+      note.content = editor.innerHTML;
+      if (!note.title || !note.title.trim()) {
+        const plain = note.content.replace(/<[^>]+>/g, '').trim();
+        note.title = plain.slice(0, 24) || 'Untitled';
+        titleInput.value = note.title;
+      }
+      note.updated = Date.now();
+      saveAll();
+      renderTabs();
+      pulseSuccess();
+    }
+
+    function togglePinCurrent() {
+      if (!currentTab) return pulseFail();
+      const note = notes.find(n => n.id === currentTab);
+      note.pinned = !note.pinned;
+      saveAll(); renderTabs();
+    }
+
+    function updateTitleLive() {
       if (!currentTab) return;
       const note = notes.find(n => n.id === currentTab);
-      note.content = document.getElementById("editor").innerHTML;
-      note.title = note.content.replace(/<[^>]+>/g, "").slice(0, 15) || "Untitled";
+      note.title = titleInput.value;
+      note.updated = Date.now();
       saveAll();
       renderTabs();
-      alert("Note saved!");
     }
 
-    // Save all notes
-    function saveAll() {
-      localStorage.setItem("cartoonNotes", JSON.stringify(notes));
+    function searchNotes() {
+      searchQuery = $('#searchBar').value;
+      renderTabs();
     }
 
     // Formatting
-    function formatText(command) {
-      document.execCommand(command, false, null);
-    }
+    function formatText(cmd) { document.execCommand(cmd, false, null); }
+    function changeColor(color) { document.execCommand('foreColor', false, color); }
 
-    function changeColor(color) {
-      document.execCommand("foreColor", false, color);
-    }
-
-    // Normalize pasted text to Roboto
-    document.getElementById("editor").addEventListener("paste", function(e) {
+    // Paste normalization to plain text (keeps Roboto)
+    editor.addEventListener('paste', e => {
       e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData("text/plain");
-      document.execCommand("insertText", false, text);
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
     });
 
-    // Load on startup
-    window.onload = () => {
-      renderTabs();
-      if (currentTab) {
-        const note = notes.find(n => n.id === currentTab);
-        if (note) document.getElementById("editor").innerHTML = note.content;
-      }
-    };
+    // Feedback animations (pulse)
+    function pulseSuccess() {
+      editor.style.boxShadow = '0 0 0 2px rgba(74,222,128,.8)';
+      setTimeout(() => editor.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,.2)', 250);
+    }
+    function pulseFail() {
+      editor.style.boxShadow = '0 0 0 2px rgba(255,107,107,.8)';
+      setTimeout(() => editor.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,.2)', 250);
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      // Ensure at least one tab
+      if (notes.length === 0) { createTab(); }
+      else { renderTabs(); openTab(notes[0].id); }
+    });
   </script>
 </body>
 </html>
